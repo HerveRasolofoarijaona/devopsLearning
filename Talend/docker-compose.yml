@@ -1,0 +1,15 @@
+services:
+
+  talend:
+    image: talend/talend-open-studio:latest # Utilisez une image valide
+    container_name: talend
+    environment:
+      - DISPLAY=${DISPLAY}
+      - TZ=CET
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./talend_workspace:/home/talend
+    network_mode: host
+    stdin_open: true
+    tty: true
+    command: /opt/talend/tos/TOS_DI-linux-gtk-x86_64.sh  # Lancer Talend Open Studio au démarrage

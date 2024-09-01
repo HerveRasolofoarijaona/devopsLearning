@@ -1,0 +1,71 @@
+services:
+  wso2apim:
+    image: wso2/wso2am:latest # Use the appropriate WSO2 API Manager version
+    container_name: wso2apim
+    ports:
+      - "8280:8280"   # HTTP Gateway Port
+      - "8243:8243"   # HTTPS Gateway Port
+      - "9443:9443"   # Management Console (Publisher and Admin Portal)
+      - "9763:9763"   # HTTP Servlet Transport
+      - "9444:9444"   # HTTPS Servlet Transport
+      - "9445:9445"   # DevPortal
+    deploy:
+      resources:
+        limits:
+          memory: 2g  # Set memory limit to 2 GB
+    networks:
+      - wso2net
+
+  wso2ei:
+    image: smartnodus/wso2ei:6.6.0  # Use the appropriate WSO2 EI version
+    container_name: wso2ei
+    ports:
+      - "8290:8290"  # HTTP Pass-Through Transport
+      - "8253:8253"  # HTTPS Pass-Through Transport
+      - "9446:9446"  # Carbon Management Console
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=wso2ei_db
+      - DATABASE_USER=wso2ei_user
+      - DATABASE_PASSWORD=ei_password
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          memory: 1g  # Set memory limit to 1 GB
+    networks:
+      - wso2net
+
+  activemq:
+    image: rmohr/activemq:latest
+    container_name: activemq
+    ports:
+      - "61616:61616"  # For JMS
+      - "8161:8161"    # For Web Console
+    volumes:
+      - ./activemq_data:/data
+    networks:
+      - wso2net
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: wso2ei_db
+      POSTGRES_USER: wso2ei_user
+      POSTGRES_PASSWORD: ei_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - wso2net
+
+networks:
+  wso2net:
+    driver: bridge
+
+volumes:
+  postgres_data:
